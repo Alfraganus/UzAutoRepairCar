@@ -14,6 +14,18 @@ $config = [
         '@tests' => '@app/tests',
     ],
     'components' => [
+	    'ldap' => [
+		    'domain_controllers'    => ['10.142.62.246', '10.142.62.247'],
+		   // 'host' => 'ldap.example.com',
+		    'port' => '389',
+		    'base_dn'               => 'DC=AD,DC=UZAUTOMOTORS,DC=COM',
+		    'admin_username'        => 'bitrix_sync',
+		    'admin_password'        => 'Bs123456789',
+		    'groupDN' => '',
+		    //Input your AD login/pass on dev or sys login/pass on test/prod servers
+		    'sysUserLogin' => '',
+		    'sysUserPassword' => '',
+	    ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
         ],

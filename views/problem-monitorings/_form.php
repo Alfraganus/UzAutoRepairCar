@@ -10,13 +10,17 @@ use yii\helpers\Url;
 /* @var $form yii\widgets\ActiveForm */
 ?>
 
-<div class="problem-monitorings-form">
-
+<div class="container" style="width:95%">
+<?= $model->PO?>
+	<p><?=substr($model->PO,0,6)?></p>
     <?php $form = ActiveForm::begin(); ?>
-    <h1><?= var_dump($_GET['ponno']) ?></h1>
  <?php
-   $api = "http://web.uzautomotors.com/empc/getVehicleInfo/".$_GET['ponno'];
- 
+
+	 if ($model->isNewRecord):
+		 $api = "http://web.uzautomotors.com/empc/getVehicleInfo/".$_GET['ponno'];
+ else :
+	 $api = "http://web.uzautomotors.com/empc/getVehicleInfo/".substr($model->PO,0,6);
+	 endif;
     $opts = [
         "http" => [
             "method" => "GET",
@@ -27,70 +31,56 @@ use yii\helpers\Url;
     $context = stream_context_create($opts);
     $sFile = file_get_contents($api, false, $context);
     $ready = json_decode($sFile);
- 
+
+    if(count($ready->data)>0) :
+
 $assoc = array();
     foreach ($ready->data as $read) {
       $string = $read->pono.' model: '.$read->model.' vinno: '.$read->vinno;
-        $assoc[] =$string;
+	    $assoc[] =$string;
        $assocPono = $read->pono;
        $assocModel = $read->model;
       }
 
-echo '<pre>';
 
- var_dump(print_r($assoc));
- echo $imp = implode($assoc);
- print_r (explode(" ",$imp));
- $exp =explode(" ",$imp) ;
-echo "</pre>";
-    ?> 
-    <h1><?=$exp[0]?></h1>
-    
+	 $sector = \yii\helpers\ArrayHelper::map(\app\models\Sectors::find()->all(),'id','name');
+	 $departments = \yii\helpers\ArrayHelper::map(\app\models\Departments::find()->all(),'id','name');
+ ?>
+
     <div class="containing" style='width:95%'>
-    <div class="col-md-12" style='margin-botton:30px'>
-    <?= $form->field($model, 'search')->widget(TypeaheadBasic::classname(), [
-        'data' => $assoc,
-        'pluginOptions' => ['highlight' => true],
-        'scrollable' => true,
-        'options' => [
-            'placeholder' => 'Izlang...',
-            'onchange'=> '
-        $.post(
-            "' . Url::toRoute('getoperations') . '", 
-            {id: $(this).val()}, 
-            function(res){
-                $("#emeliyyatlar").html(res);
-            }
-        );'],
-        
-    ]); ?>
+    <div class="col-md-6" style='margin-botton:30px'>
+    <?= $form->field($model, 'search')->dropDownList($assoc) ?>
     </div>
    
-    <div class="col-md-4">
-    <?= $form->field($model, 'sector')->textInput() ?>
+    <div class="col-md-6">
+    <?= $form->field($model, 'sector')->dropDownList($sector) ?>
     </div>
-    <div class="col-md-4">
-    <?= $form->field($model, 'shift')->dropdownlist(['А'=>'А','В'=>'В','Д'=>'Д']) ?>
-    </div>
-    <div class="col-md-4">
-    <?= $form->field($model, 'model')->textInput(['maxlength' => true]) ?>
+    <div class="col-md-6">
+    <?= $form->field($model, 'shift')->dropdownlist(['A'=>'A','B'=>'B','D'=>'D']) ?>
     </div>
 
 
-    <div class="col-md-4">
-    <?= $form->field($model, 'date')->input('date',['format'=>'dd-mm-YYYY','value'=>date("Y-m-d")]) ?>
+
+    <div class="col-md-6">
+	    <?= $form->field($model, 'department')->dropDownList($departments) ?>
+
     </div>
-    <div class="col-md-4">
-    <?= $form->field($model, 'department')->textInput() ?>
+    <div class="col-md-6">
+	    <?= $form->field($model, 'res_person_tabel')->textInput() ?>
+	    <?php $form->field($model, 'date')->input('date',['format'=>'dd-mm-YYYY','value'=>date("Y-m-d"),'readonly'=>true]) ?>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-6">
     <?= $form->field($model, 'spent_on')->textInput(['maxlength' => true]) ?>
     </div>
-    <div class="col-md-12" style='margin-botton:30px'>
+
+	    <div class="col-md-6">
+		    <?= $form->field($model, 'repair_case')->dropDownList([1=>'kichik',2=>"o'rta",3=>'katta']) ?>
+	    </div>
+    <div class="col-md-6">
     <label for="male">Muammo(lar)</label>
     <?php
    if (!$model->isNewRecord) {
-        $tags = \yii\helpers\ArrayHelper::map(\app\models\TagAssign::find()->where(['post_id'=>$model->id])->all(),'id','tag.name');
+        $tags = \yii\helpers\ArrayHelper::map(\app\models\TagAssign::find()->where(['post_id'=>$model->id])->all(),'id','tag.id');
         $tags_str = implode(',',$tags);
     }else{
         $tags_str = '';
@@ -113,7 +103,8 @@ echo "</pre>";
     ]);
     ?>
     </div>
-   
+	    <div style="clear:both"></div>
+
     <div class="col-md-6">
     <?= $form->field($model, 'problem')->textarea(['rows' => 6]) ?>
     </div>
@@ -133,9 +124,15 @@ echo "</pre>";
  
 
     <div class="form-group">
-        <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
+        <?= Html::submitButton('Saqlash', ['class' => 'btn btn-success']) ?>
     </div>
 
     <?php ActiveForm::end(); ?>
 
 </div>
+    <?php else : ?>
+	    <br>
+	    <div class="alert alert-warning">
+		    <strong>Ushbu P/O raqamlari bo'yicha ma'lumotlar bazasida natija topilmadi!</strong>
+	    </div>
+ <?php endif; ?>

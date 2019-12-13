@@ -2,103 +2,124 @@
 
 namespace app\models;
 
-class User extends \yii\base\BaseObject implements \yii\web\IdentityInterface
-{
-    public $id;
-    public $username;
-    public $password;
-    public $authKey;
-    public $accessToken;
+use Yii;
+use yii\web\IdentityInterface;
 
-    private static $users = [
-        '100' => [
-            'id' => '100',
-            'username' => 'admin',
-            'password' => 'admin',
-            'authKey' => 'test100key',
-            'accessToken' => '100-token',
-        ],
-        '101' => [
-            'id' => '101',
-            'username' => 'demo',
-            'password' => 'demo',
-            'authKey' => 'test101key',
-            'accessToken' => '101-token',
-        ],
-    ];
+/**
+ * This is the model class for table "user".
+ *
+ * @property integer $id
+ * @property string $username
+ * @property string $password
+ * @property string $full_name
+ * @property string $status
+ * @property string $role
+ * @property string $created_at
+ *
+ * @property Post[] $posts
+ */
+class User extends \yii\db\ActiveRecord implements IdentityInterface
+{
+    /**
+     * @inheritdoc
+     */
+    public static function tableName()
+    {
+        return 'users';
+    }
+
+	const STATUS_ACTIVE   = 10;
+	const STATUS_INACTIVE = 1;
+
+    public $current_password;
+    public $new_password;
+    public $confirm_password;
+
+    public $authKey;
+    public $status=10;
+
+
+	public $statusList = [
+		self::STATUS_ACTIVE   => 'Active',
+		self::STATUS_INACTIVE => 'Inactive',
+	];
+	public $password;
+
+    public function rules()
+    {
+        return [
+            [['username', 'fullname'], 'required'],
+            [['username'], 'unique'],
+            [['fullname'], 'string', 'max' => 255],
+            [['role'], 'string', 'max' => 100],
+            [['status'], 'safe'],
+            ['status', 'required'],
+            [['username', 'password'], 'string', 'min' => 4],
+        ];
+    }
 
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
+    public function attributeLabels()
+    {
+        return [
+            'id' => 'ID',
+            'username' => 'Foydalanuvchi logini (tabel raqami:)',
+            'fullname' => 'Ism va sharifi',
+            'password' => 'Parol',
+            'new_password' => 'Parol',
+            'full_name' => 'FIO',
+            'status' => 'Holati',
+            'role' => 'Huquqi',
+            'created_at' => 'Sana',
+        ];
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getPosts()
+    {
+        return $this->hasMany(ProblemMonitorings::className(), ['user_id' => 'id']);
+    }
     public static function findIdentity($id)
     {
-        return isset(self::$users[$id]) ? new static(self::$users[$id]) : null;
+        return static::findOne($id);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function findIdentityByAccessToken($token, $type = null)
     {
-        foreach (self::$users as $user) {
-            if ($user['accessToken'] === $token) {
-                return new static($user);
-            }
-        }
-
-        return null;
+        return static::findOne(['access_token' => $token]);
     }
 
-    /**
-     * Finds user by username
-     *
-     * @param string $username
-     * @return static|null
-     */
-    public static function findByUsername($username)
-    {
-        foreach (self::$users as $user) {
-            if (strcasecmp($user['username'], $username) === 0) {
-                return new static($user);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getId()
     {
         return $this->id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getAuthKey()
     {
         return $this->authKey;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function validateAuthKey($authKey)
     {
         return $this->authKey === $authKey;
     }
 
-    /**
-     * Validates password
-     *
-     * @param string $password password to validate
-     * @return bool if password provided is valid for current user
-     */
+    public static function findByUsername($username)
+    {
+        return static::findOne(['username' => $username]);
+    }
+
     public function validatePassword($password)
     {
-        return $this->password === $password;
+        if (Yii::$app->security->validatePassword($password, $this->password)) {
+            return true;
+        }else{
+            return false;
+        }
     }
 }

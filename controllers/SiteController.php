@@ -2,41 +2,49 @@
 
 namespace app\controllers;
 
+use app\models\ProblemMonitorings;
+use app\models\Sectors;
 use Yii;
+use yii\base\ErrorException;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
+use yii\web\NotFoundHttpException;
 
 class SiteController extends Controller
 {
     /**
      * {@inheritdoc}
      */
-    public function behaviors()
-    {
-        return [
-            'access' => [
-                'class' => AccessControl::className(),
-                'only' => ['logout'],
-                'rules' => [
-                    [
-                        'actions' => ['logout'],
-                        'allow' => true,
-                        'roles' => ['@'],
-                    ],
-                ],
-            ],
-            'verbs' => [
-                'class' => VerbFilter::className(),
-                'actions' => [
-                    'logout' => ['post'],
-                ],
-            ],
-        ];
-    }
+	public function behaviors()
+	{
+		return [
+			'access' => [
+				'class' => AccessControl::className(),
+				'rules' => [
+					[
+						'actions' => ['login', 'error'],
+						'allow' => true,
+					],
+					[
+						'actions' => ['logout', 'index','manageCountry'],
+						'allow' => true,
+						'roles' => ['@'],
+					],
+				],
+			],
+			'verbs' => [
+				'class' => VerbFilter::className(),
+				'actions' => [
+					'logout' => ['post'],
+				],
+			],
+		];
+	}
+
 
     /**
      * {@inheritdoc}
@@ -61,7 +69,32 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+    	/*for cars report n1*/
+	   $sectors= Sectors::find()->all();
+	    $model = new ProblemMonitorings();
+	    $model->dateSearch= date('Y-m-d 08:00:00').' - '.date('Y-m-d 24:00:00');
+
+
+
+
+	    foreach($sectors as $sector)
+	    {
+	    	$labels[]=$sector->name;
+	    }
+
+	    if ($model->load(Yii::$app->request->post()) ){
+		    $statisticsDateBegin = ProblemMonitorings::GetStatisticsDateStart($model->dateSearch);
+		    $statisticsDateFinish = ProblemMonitorings::GetStatisticsDateEnd($model->dateSearch);
+
+	    }
+
+        return $this->render('index',compact(
+		        'labels',
+		              'sectors',
+		               'model',
+		        'statisticsDateBegin',
+	                  'statisticsDateFinish'
+        ));
     }
 
     /**
@@ -69,24 +102,49 @@ class SiteController extends Controller
      *
      * @return Response|string
      */
-    public function actionLogin()
-    {
-        if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
-        }
+	public function actionLogin()
+	{
+		{
+			// user is logged in, he doesn't need to login
+			$this->layout = "user-login";
+			if (!Yii::$app->user->isGuest) {
+				return $this->goHome();
+			}
 
-        $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
-        }
+			// get setting value for 'Login With Email'
+			$lwe = Yii::$app->params['lwe'];
 
-        $model->password = '';
-        return $this->render('login', [
-            'model' => $model,
-        ]);
-    }
+			// if 'lwe' value is 'true' we instantiate LoginForm in 'lwe' scenario
+			$model = $lwe ? new LoginForm(['scenario' => 'lwe']) : new LoginForm();
 
-    /**
+			// monitor login status
+			$successfulLogin = true;
+
+			// posting data or login has failed
+			if (!$model->load(Yii::$app->request->post()) || !$model->login()) {
+				$successfulLogin = false;
+			}
+
+			// if user's account is not activated, he will have to activate it first
+			if ($model->status === 0 && $successfulLogin === false) {
+				Yii::$app->session->setFlash('error', Yii::t('app',
+				                                             'You have to activate your account first. Please check your email.'));
+				return $this->refresh();
+			}
+
+			// if user is not denied because he is not active, then his credentials are not good
+			if ($successfulLogin === false) {
+				return $this->render('login', ['model' => $model]);
+			}
+
+			// login was successful, let user go wherever he previously wanted
+			return $this->goBack();
+		}
+
+	}
+
+
+	/**
      * Logout action.
      *
      * @return Response
@@ -125,4 +183,6 @@ class SiteController extends Controller
     {
         return $this->render('about');
     }
+
+
 }

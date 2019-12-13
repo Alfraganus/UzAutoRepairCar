@@ -29,8 +29,8 @@ class TagController extends Controller
         Yii::$app->response->format = Response::FORMAT_JSON;
         $items = [];
         $query = urldecode(mb_convert_encoding($query, "UTF-8"));
-        foreach (\app\models\Tag::find()->where(['like', 'name', $query])->asArray()->all() as $tag) {
-            $items[] = ['keyword' => $tag['name']];
+        foreach (\app\models\Tag::find()->where(['like', 'id', $query])->asArray()->all() as $tag) {
+            $items[] = ['keyword' => $tag['id'].', '.$tag['name']];
         }
         return $items;
     }

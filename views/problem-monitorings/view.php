@@ -16,11 +16,11 @@ $this->params['breadcrumbs'][] = $this->title;
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a('Update', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
-        <?= Html::a('Delete', ['delete', 'id' => $model->id], [
+         <?= Html::a('Tahrirlash', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
+        <?= Html::a('O\'chirish', ['delete', 'id' => $model->id], [
             'class' => 'btn btn-danger',
             'data' => [
-                'confirm' => 'Are you sure you want to delete this item?',
+                'confirm' => 'Siz ushbu ma\'lumotni o\'chirishga aminmisiz?',
                 'method' => 'post',
             ],
         ]) ?>
@@ -29,19 +29,28 @@ $this->params['breadcrumbs'][] = $this->title;
     <?= DetailView::widget([
         'model' => $model,
         'attributes' => [
-            'id',
-            'sector',
+
+
+	        [
+		        'header' =>  'Uchastka',
+		        'attribute' => 'uchastka.name',
+	        ],
             'shift',
-            'date',
+            [
+	            'attribute' => 'date',
+	            'format' => ['date', 'php:d/m/Y']
+            ],
             'model',
-            'department',
+	        [
+		        'header' =>  'Bo\'lim',
+		        'attribute' =>'bolim.name',
+	        ],
             'PO',
             'problem:ntext',
             'spent_on',
             'comment:ntext',
             'winno',
-            'user_id',
-            'created_at',
+
         ],
     ]) ?>
 

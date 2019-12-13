@@ -12,6 +12,26 @@ $config = [
         '@npm'   => '@vendor/npm-asset',
     ],
     'components' => [
+	    'ad' =>[
+		    'class' => 'Edvlerblog\Adldap2\Adldap2Wrapper',
+		    'providers' => [
+			    'default' => [
+				    'autoconnect' => true,
+				    'config' => [
+					    'hosts'    => ['10.142.62.246', '10.142.62.247'],
+					    'base_dn'               => 'DC=AD,DC=UZAUTOMOTORS,DC=COM',
+					    'username'        => 'bitrix_sync',
+					    'password'        => 'Bs123456789',
+					    'port'                  => '3268',
+				    ]
+			    ],
+		    ],
+	    ],
+	    'formatter' => [
+            'dateFormat' => 'dd.MM.yyyy',
+            'decimalSeparator' => ',',
+            'thousandSeparator' => ' ',
+       ],
         'request' => [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
             'cookieValidationKey' => 'hellofleet',
@@ -21,7 +41,14 @@ $config = [
         ],
         'user' => [
             'identityClass' => 'app\models\User',
-            'enableAutoLogin' => true,
+            'enableAutoLogin' => false,
+            'authTimeout' => 3600,
+        ],
+        'session' => [
+	        'class' => 'yii\web\Session',
+	        'cookieParams' => ['httponly' => true, 'lifetime' => 3600 * 4],
+	        'timeout' => 3600*4, //session expire
+	        'useCookies' => true,
         ],
         'errorHandler' => [
             'errorAction' => 'site/error',
