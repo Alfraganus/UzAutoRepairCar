@@ -49,6 +49,11 @@ class Sectors extends \yii\db\ActiveRecord
 	    return $this->hasMany(ServicePrice::className(), ['sector_id' => 'id']);
     }
 
+	public function getCarMonitoring()
+	{
+		return $this->hasMany(ProblemMonitorings::className(), ['sector' => 'id']);
+	}
+
 
     public function FindDisabledCar($model,$sector,$case,$datebegin,$dateFinish)
     {
@@ -60,8 +65,8 @@ class Sectors extends \yii\db\ActiveRecord
 	                                 ->where(['model' => $model])
 	                                 ->andWhere(['sector' => $sector])
 		                                ->andWhere(['repair_case'=>$case])
-															    ->andWhere(['>', 'date', $datebegin])
-															    ->andWhere(['<', 'date', $dateFinish])
+															    ->andWhere(['>=', 'date', $datebegin])
+															    ->andWhere(['<=', 'date', $dateFinish])
 	                                 ->count();
     	return $findCar;
 
@@ -75,8 +80,8 @@ class Sectors extends \yii\db\ActiveRecord
 	                                 ->where(['model'=>$model])
 															    ->andWhere(['sector'=>$sector])
 															    ->andWhere(['repair_case'=>$case])
-															    ->andWhere(['>', 'date', $datebegin])
-															    ->andWhere(['<', 'date', $dateFinish])
+															    ->andWhere(['>=', 'date', $datebegin])
+															    ->andWhere(['<=', 'date', $dateFinish])
 	                                 ->sum('money_spent');
 	    return $final;
 

@@ -6,6 +6,7 @@ use Yii;
 use app\models\Departments;
 use app\models\DepartmentsSearch;
 use yii\web\Controller;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
@@ -64,6 +65,9 @@ class DepartmentsController extends Controller
      */
     public function actionCreate()
     {
+	    if(Yii::$app->user->identity->role=='ishlab_chiqarish_writer'){
+		    throw new ForbiddenHttpException('Sizda ushbu amal uchun ruxsat mavjud emas!');
+	    }
         $model = new Departments();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
@@ -84,6 +88,9 @@ class DepartmentsController extends Controller
      */
     public function actionUpdate($id)
     {
+	    if(Yii::$app->user->identity->role=='ishlab_chiqarish_writer'){
+		    throw new ForbiddenHttpException('Sizda ushbu amal uchun ruxsat mavjud emas!');
+	    }
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
@@ -104,6 +111,9 @@ class DepartmentsController extends Controller
      */
     public function actionDelete($id)
     {
+	    if(Yii::$app->user->identity->role=='ishlab_chiqarish_writer'){
+		    throw new ForbiddenHttpException('Sizda ushbu amal uchun ruxsat mavjud emas!');
+	    }
         $this->findModel($id)->delete();
 
         return $this->redirect(['index']);

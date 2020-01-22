@@ -3,17 +3,17 @@
 namespace app\controllers;
 
 use Yii;
-use app\models\Sectors;
-use app\models\SectorsSearch;
+use app\models\Quality;
+use app\models\QualitySearch;
 use yii\web\Controller;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
-
+use yii\web\UploadedFile;
 /**
- * SectorsController implements the CRUD actions for Sectors model.
+ * QualityController implements the CRUD actions for Quality model.
  */
-class SectorsController extends Controller
+class QualityController extends Controller
 {
     /**
      * {@inheritdoc}
@@ -31,12 +31,12 @@ class SectorsController extends Controller
     }
 
     /**
-     * Lists all Sectors models.
+     * Lists all Quality models.
      * @return mixed
      */
     public function actionIndex()
     {
-        $searchModel = new SectorsSearch();
+        $searchModel = new QualitySearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
@@ -46,7 +46,7 @@ class SectorsController extends Controller
     }
 
     /**
-     * Displays a single Sectors model.
+     * Displays a single Quality model.
      * @param integer $id
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
@@ -59,18 +59,22 @@ class SectorsController extends Controller
     }
 
     /**
-     * Creates a new Sectors model.
+     * Creates a new Quality model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
     public function actionCreate()
     {
-	    if(Yii::$app->user->identity->role=='ishlab_chiqarish_writer'){
-		    throw new ForbiddenHttpException('Sizda ushbu amal uchun ruxsat mavjud emas!');
-	    }
-        $model = new Sectors();
+        $model = new Quality();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+	        $model->image = UploadedFile::getInstance($model, 'image');
+	        if ($model->image and $model->upload()) {
+		        $model->image = $model->image->baseName.time().'.'.$model->image->extension;
+		        $model->save();
+	        }
+        	$model->date = date('Y-m-d');
+        	$model->save();
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
@@ -80,7 +84,7 @@ class SectorsController extends Controller
     }
 
     /**
-     * Updates an existing Sectors model.
+     * Updates an existing Quality model.
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param integer $id
      * @return mixed
@@ -88,13 +92,22 @@ class SectorsController extends Controller
      */
     public function actionUpdate($id)
     {
-	    if(Yii::$app->user->identity->role=='ishlab_chiqarish_writer'){
+	    if(Yii::$app->user->identity->role=='quality_writer'){
 		    throw new ForbiddenHttpException('Sizda ushbu amal uchun ruxsat mavjud emas!');
 	    }
 
         $model = $this->findModel($id);
-
+	    $image = $model->image;
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+
+        	$model->image = UploadedFile::getInstance($model, 'image');
+	        if ($model->image and $model->upload()) {
+		        $model->image = $model->image->baseName.time().'.'.$model->image->extension;
+		        $model->save(false);
+	        }else{
+		        $model->image = $image;
+		        $model->save(false);
+	        }
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
@@ -104,7 +117,7 @@ class SectorsController extends Controller
     }
 
     /**
-     * Deletes an existing Sectors model.
+     * Deletes an existing Quality model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param integer $id
      * @return mixed
@@ -112,7 +125,7 @@ class SectorsController extends Controller
      */
     public function actionDelete($id)
     {
-	    if(Yii::$app->user->identity->role=='ishlab_chiqarish_writer'){
+	    if(Yii::$app->user->identity->role=='quality_writer'){
 		    throw new ForbiddenHttpException('Sizda ushbu amal uchun ruxsat mavjud emas!');
 	    }
 
@@ -122,15 +135,15 @@ class SectorsController extends Controller
     }
 
     /**
-     * Finds the Sectors model based on its primary key value.
+     * Finds the Quality model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
      * @param integer $id
-     * @return Sectors the loaded model
+     * @return Quality the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($id)
     {
-        if (($model = Sectors::findOne($id)) !== null) {
+        if (($model = Quality::findOne($id)) !== null) {
             return $model;
         }
 

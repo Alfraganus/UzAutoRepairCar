@@ -51,7 +51,7 @@ class TagAssign extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'tag_id' => 'Tag ID',
+            'tag_id' => 'Defekt kod',
             'post_id' => 'Post ID',
         ];
     }

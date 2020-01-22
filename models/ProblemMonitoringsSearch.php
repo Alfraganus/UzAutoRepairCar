@@ -5,6 +5,7 @@ namespace app\models;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use app\models\ProblemMonitorings;
+use Yii;
 
 /**
  * ProblemMonitoringsSearch represents the model behind the search form of `app\models\ProblemMonitorings`.
@@ -46,6 +47,7 @@ class ProblemMonitoringsSearch extends ProblemMonitorings
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'sort'=> ['defaultOrder' => ['id' => SORT_DESC]]
         ]);
 
         $this->load($params);
@@ -63,7 +65,7 @@ class ProblemMonitoringsSearch extends ProblemMonitorings
             'date' => $this->date,
             'department' => $this->department,
             'spent_on' => $this->spent_on,
-            'user_id' => $this->user_id,
+            'user_id' =>  (Yii::$app->user->identity->role=='ishlab_chiqarish_manager')?$this->user_id :\Yii::$app->user->id,
             'created_at' => $this->created_at,
         ]);
 

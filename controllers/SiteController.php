@@ -8,6 +8,7 @@ use Yii;
 use yii\base\ErrorException;
 use yii\filters\AccessControl;
 use yii\web\Controller;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
@@ -67,34 +68,32 @@ class SiteController extends Controller
      *
      * @return string
      */
-    public function actionIndex()
-    {
-    	/*for cars report n1*/
-	   $sectors= Sectors::find()->all();
+    public function actionIndex(){
+	    /*for cars report n1*/
+	    $sectors = Sectors::find()->all();
 	    $model = new ProblemMonitorings();
-	    $model->dateSearch= date('Y-m-d 08:00:00').' - '.date('Y-m-d 24:00:00');
-
-
-
-
-	    foreach($sectors as $sector)
-	    {
-	    	$labels[]=$sector->name;
+	    $model->dateSearch = date('Y-m-d').' - '.date('Y-m-d');
+	    foreach($sectors as $sector){
+		    $labels[] = $sector->name;
 	    }
-
-	    if ($model->load(Yii::$app->request->post()) ){
+	    if($model->load(Yii::$app->request->post())){
 		    $statisticsDateBegin = ProblemMonitorings::GetStatisticsDateStart($model->dateSearch);
 		    $statisticsDateFinish = ProblemMonitorings::GetStatisticsDateEnd($model->dateSearch);
-
+				ProblemMonitorings::ExportDatas();
 	    }
+	    return $this->render('index', compact(
+		    'labels',
+		    'sectors',
+		    'model',
+		    'statisticsDateBegin',
+		    'statisticsDateFinish'
+	    ));
+    }
 
-        return $this->render('index',compact(
-		        'labels',
-		              'sectors',
-		               'model',
-		        'statisticsDateBegin',
-	                  'statisticsDateFinish'
-        ));
+    public function actionRepairSectorMonitorings()
+    {
+
+		    return $this->render('repair_sector_monitorings');
     }
 
     /**

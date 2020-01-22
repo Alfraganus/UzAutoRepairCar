@@ -23,30 +23,28 @@
 		$cobalt[] = ProblemMonitorings::find()
 		                              ->where(['sector' => $sector->id])
 		                              ->andWhere(['model' => '1JX69'])
-			->andWhere(['>', 'created_at', $statisticsDateBegin])
-			->andWhere(['<', 'created_at', $statisticsDateFinish])
+			->andWhere(['>=', 'date', $statisticsDateBegin])
+			->andWhere(['<=', 'date', $statisticsDateFinish])
 		                              ->count();
 		$gentra[] = ProblemMonitorings::find()
 		                              ->where(['sector' => $sector->id])
 		                              ->andWhere(['model' => '13U19'])
-			->andWhere(['>', 'created_at', $statisticsDateBegin])
-			->andWhere(['<', 'created_at', $statisticsDateFinish])
+			->andWhere(['>=', 'date', $statisticsDateBegin])
+			->andWhere(['<=', 'date', $statisticsDateFinish])
 		                              ->count();
 		$spark[] = ProblemMonitorings::find()
 		                             ->where(['sector' => $sector->id])
 		                             ->andWhere(['model' => '1CQ48'])
-			->andWhere(['>', 'created_at', $statisticsDateBegin])
-			->andWhere(['<', 'created_at', $statisticsDateFinish])
+			->andWhere(['>=', 'date', $statisticsDateBegin])
+			->andWhere(['<=', 'date', $statisticsDateFinish])
 		                             ->count();
 		$nexia[] = ProblemMonitorings::find()
 		                             ->where(['sector' => $sector->id])
 		                             ->andWhere(['model' => '1TH69'])
-			->andWhere(['>', 'created_at', $statisticsDateBegin])
-			->andWhere(['<', 'created_at', $statisticsDateFinish])
+			->andWhere(['>=', 'date', $statisticsDateBegin])
+			->andWhere(['<=', 'date', $statisticsDateFinish])
 		                             ->count();
 		/* tugadi */
-
-	 
 
 	}
 
@@ -96,14 +94,21 @@
 		                          ->andWhere(['<=', 'date', $statisticsDateFinish])
 		                       ->count();
 
-
-
-
 	}
+//$uchastkaAllCost
 
 	/*top defekt kodlar tugadi*/
-
 		$uchastkalar = Sectors::find()->all();
 
+
+		/*uchastkalar miqyosida aniqlangan zarar*/
+	foreach($uchastkalar as $uchastka){
+		$sums[] = ProblemMonitorings::find()
+		                            ->where(['>=', 'date', $statisticsDateBegin])
+		                            ->andWhere(['<=', 'date',$statisticsDateFinish])
+		                            ->andwhere(['sector' => $uchastka->id])
+		                            ->sum('money_spent');
+
+		}
 
 		?>

@@ -6,6 +6,7 @@ use Yii;
 use app\models\User;
 use app\models\UserSearch;
 use yii\web\Controller;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
@@ -35,6 +36,10 @@ class UserController extends Controller
      */
     public function actionIndex()
     {
+
+	    if(Yii::$app->user->identity->role=='ishlab_chiqarish_writer'){
+		    throw new ForbiddenHttpException('Sizda ushbu amal uchun ruxsat mavjud emas!');
+	    }
         $searchModel = new UserSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
@@ -64,6 +69,10 @@ class UserController extends Controller
      */
     public function actionCreate()
     {
+	    if(Yii::$app->user->identity->role=='ishlab_chiqarish_writer'){
+		    throw new ForbiddenHttpException('Sizda ushbu amal uchun ruxsat mavjud emas!');
+	    }
+
         $model = new User();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
@@ -84,6 +93,11 @@ class UserController extends Controller
      */
     public function actionUpdate($id)
     {
+
+	    if(Yii::$app->user->identity->role=='ishlab_chiqarish_writer'){
+		    throw new ForbiddenHttpException('Sizda ushbu amal uchun ruxsat mavjud emas!');
+	    }
+
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {

@@ -13,6 +13,7 @@ use yii\helpers\Url;
 
 AppAsset::register($this);
 $action = Yii::$app->controller->id;
+$role = Yii::$app->user->identity->role;
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
@@ -152,25 +153,44 @@ $action = Yii::$app->controller->id;
               </span>
                 </div>
             </form>
-            <!-- /.search form -->
-            <!-- sidebar menu: : style can be found in sidebar.less -->
+
+
+
             <ul class="sidebar-menu" data-widget="tree">
-            <li class="<?=($action=='site')?'active':''?>">
+
+	            <li class="<?=($action=='site')?'active':''?>">
                     <a href="<?= Url::to(['site/'])?>">
                         <i class="fa fa-dashboard"></i>
                         <span>Asosiy</span>
                     </a>
                 </li>
 
-	            <li class="<?=($action=='problem-monitorings')?'active':''?>">
-                    <a href="<?= Url::to(['problem-monitorings/'])?>">
-                        <i class="fa fa-files-o"></i>
-                        <span>Monitoring</span>
-                    </a>
-                </li>
+	            <!--kachest uchun-->
+	            <?php if($role=='quality_writer' or $role=='quality_manager'): ?>
+		            <li class="<?=($action=='quality')?'active':''?>">
+			            <a href="<?= Url::to(['quality/'])?>">
+				            <i class="fa fa-files-o"></i>
+				            <span>Xodim registratsiyasi</span>
+			            </a>
+		            </li>
+	            <?php else :?>
+	            <!--end kachestva-->
 
 
-	            <?php if(Yii::$app->user->identity->role=='Admin'): ?>
+		            <li class="<?=($action=='problem-monitorings')?'active':''?>">
+			            <a href="<?= Url::to(['problem-monitorings/'])?>">
+				            <i class="fa fa-files-o"></i>
+				            <span>Monitoring</span>
+			            </a>
+		            </li>
+
+		            <li>
+			            <a href="<?= Url::to(['test/repair-sector-monitorings'])?>">
+				            <i class="fa fa-dashboard"></i>
+				            <span>Ta'mirlar xisoboti</span>
+			            </a>
+		            </li>
+
 		            <li class="<?=($action=='service-price')?'active':''?>">
 			            <a href="<?= Url::to(['service-price/'])?>">
 				            <i class="fa fa-gears"></i>

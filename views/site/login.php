@@ -22,7 +22,7 @@ $this->title = 'Login';
                 <div class="panel panel-default panel-border-color panel-border-color-primary">
                     <div class="panel-heading">
                         <!-- <img src="<?=Yii::$app->homeUrl;?>img/login.png" alt="logo" width="122" height="127" class="logo-img"> -->
-                       <h3> <span style="font-size: 26px;font-family: impact" class="splash-description"><b>Repair IT system</b></span> </h3>
+                       <h3> <span style="font-size: 26px;font-family: impact" class="splash-description"><b>UzautoMotors Repair system</b></span> </h3>
                     </div>
                     <div class="panel-body">
                         <?php $form = ActiveForm::begin(['options' => ['autocomplete' => 'off']]) ?>

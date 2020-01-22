@@ -43,15 +43,15 @@ class ProblemMonitorings extends \yii\db\ActiveRecord
     {
         return [
             [['sector', 'department', 'spent_on', 'user_id'], 'integer'],
-            // [['shift', 'department'], 'required'],
-            [['date', 'created_at','repair_case','money_spent'], 'safe'],
+             [['tag'], 'required','message'=>'Eng kamida bir dona defekt kodi kiriting!'],
+            [['date', 'created_at','repair_case','money_spent','finished_at','problem_status'], 'safe'],
             [['problem', 'comment'], 'string'],
             [['shift'], 'string', 'max' => 10],
             [['model'], 'string', 'max' => 150],
             [['PO', 'winno'], 'string', 'max' => 100],
             [['ponno','search','tag','dateSearch','res_person_tabel'],'safe'],
-            [['search'], 'required', 'on' => self::SCENARIO_CREATE,'message'=>'Ushbu maydonni to\'ldirish majburiy'],
-            [['spent_on'], 'required','message'=>'Ushbu maydonni to\'ldirish majburiy']
+            [['search'], 'required', 'on' => self::SCENARIO_CREATE,'message'=>'Ushbu madonni to\'ldirish majburiy'],
+//            [['spent_on'], 'required','message'=>'Ushbu maydonni to\'ldirish majburiy']
         ];
     }
 
@@ -87,7 +87,12 @@ class ProblemMonitorings extends \yii\db\ActiveRecord
 		return $arrayTags;
 	}
 
-
+	public function FinancialLossCurrentMonth()
+	{
+		$amountCars = ProblemMonitorings::find()->where(['>=','date',date('Y-m-01')])->sum('money_spent');
+		return $amountCars;
+	}
+	
 	public function FindCarData($api,$index) {
 		$api = "http://web.uzautomotors.com/empc/getVehicleInfo/".$api;
 		$opts = [
@@ -112,9 +117,9 @@ class ProblemMonitorings extends \yii\db\ActiveRecord
 
 	/*remont qilingan mashinani minutga asosida narxini xisoblash*/
 
-		public function CalculatePrice($sector_id,$model,$case,$spent_time)
+		public function CalculatePrice($sector_id,$model,$case,$starting_time,$finishing_time)
 		{
-			if($model=='1CR48' or $model=='1CP48') {
+			if($model=='1CR48' or $model=='1CP48' or $model=='1MW48') {
 				$model='1CQ48';
 			} else if ($model=='1TH69') {
 				$model='1TF69';
@@ -130,28 +135,64 @@ class ProblemMonitorings extends \yii\db\ActiveRecord
 			 {
 				 $case='is_large';
 			 }
+			/* finding time interval*/
+			$datetime1 = date_create($starting_time);
+			$datetime2 = date_create($finishing_time);
+
+			$interval = date_diff($datetime1, $datetime2);
+			/*get time*/
+			$minutes = $interval->format('%i');
+			$hours = $interval->format('%h');
+			($hours>0)?$hours = $hours*60:null;
+			$overallTime = $minutes+$hours;
 
 			$priceList = ServicePrice::find()
 			                         ->where(['sector_id'=>$sector_id])
 																->andWhere(['model'=>$model])
 																->one();
 
-				$prise = $priceList->$case*$spent_time;
+				$prise = $priceList->$case*$overallTime;
 
-			 return $prise ;
+			 return $prise;
 		}
 
+
+		public function AniqlanganZarar($starting_time,$finishing_time) {
+			$uchastkalar = Sectors::find()->all();
+			foreach($uchastkalar as $uchastka){
+				$sums[] = ProblemMonitorings::find()
+				                            ->where(['>=', 'date',$starting_time])
+				                            ->andWhere(['<=', 'date', $finishing_time])
+				                            ->andwhere(['sector' => $uchastka->id])
+				                            ->sum('money_spent');
+
+			}
+		}
 
 		/*statistikalar */
 	public function TodaysCars()
 	{
-		$amountCars = ProblemMonitorings::find()->where(['date'=>date('Y-m-d')])->count();
+		$amountCars = ProblemMonitorings::find()
+			->where(['>=','created_at',date('Y-m-d 08:00:00')])
+			->andWhere(['<=','created_at',date('Y-m-d 20:00:00')])
+		  ->count();
+		return $amountCars;
+	}
+
+	public function YesterdayNightsCars()
+	{
+		$day = date('d')-1;
+		$yesterdayNight = date('Y-m-'.$day.' 20:00:00');
+		$amountCars = ProblemMonitorings::find()
+		                                ->where(['>=','created_at',$yesterdayNight])
+		                                ->andWhere(['<=','created_at',date('Y-m-d 08:00:00')])
+		                                ->count();
 		return $amountCars;
 	}
 
 	public function CarsCurrentMonth()
 	{
-		$amountCars = ProblemMonitorings::find()->where(['>','date',date('Y-m-01')])->count();
+		$amountCars = ProblemMonitorings::find()->where(['>=','date',date('Y-m-01')])->count();
 		return $amountCars;
 	}
 
@@ -160,7 +201,10 @@ class ProblemMonitorings extends \yii\db\ActiveRecord
 		$previousMonth = date('m')-1;
 		$year = date('Y');
 		$day = date('01');
-		$amountCars = ProblemMonitorings::find()->where(['>','date',$year.'-'.$previousMonth.'-'.$day])->andWhere(['<','date',$year.'-'.$previousMonth.'-'.date('t')])->count();
+		$amountCars = ProblemMonitorings::find()
+		                                ->where(['>=','date',$year.'-'.$previousMonth.'-'.$day])
+		                                ->andWhere(['<=','date',$year.'-'.$previousMonth.'-'.date('t')])
+		                                ->count();
 		return $amountCars;
 	}
 
@@ -168,10 +212,47 @@ class ProblemMonitorings extends \yii\db\ActiveRecord
 	{
 		$lastMonth = ProblemMonitorings::CarsPreviousMonth();
 		$currentMonth = ProblemMonitorings::CarsCurrentMonth();
+		if($lastMonth>0 and $currentMonth>0){
 		$percentage = $currentMonth/$lastMonth*100-100;
 		$percentage =intval($percentage);
+		} else {
+			$percentage=0;
+		}
 
 		return $percentage;
+	}
+
+
+	public function ExportDatas()
+	{
+		$file = \Yii::createObject([
+			                           'class' => 'codemix\excelexport\ExcelFile',
+			                           'sheets' => [
+				                           'Users' => [
+					                           'class' => 'codemix\excelexport\ActiveExcelSheet',
+					                           'query' => ProblemMonitorings::find(),
+					                           'attributes' => [
+					                           	'date',
+						                           'uchastka.name',
+						                           'shift',
+						                           'model',
+						                           'res_person_tabel',
+						                           'department',    // Related attribute
+						                           'PO',
+					                            'winno',
+					                            'defectName.tag_id',
+					                            'spent_on',
+					                            'userinfo.fullname',
+					                            'comment',
+					                            'created_at',
+					                            'finished_at',
+					                            'money_spent',
+					                            'repair_case'
+					                           ],
+				                           ]
+			                           ]
+		                           ]);
+		return $file->send(date('d-m-Y').'repairlar.xlsx');
 	}
 
 
@@ -184,7 +265,8 @@ class ProblemMonitorings extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'id' => 'ID',
+	        'id' => 'ID',
+	        'problem_status' => 'Ta\'mir xolati:',
             'sector' => 'Uchastka',
             'res_person_tabel' => 'Nuqson uchun javobgar xodimning tabel raqami',
             'money_spent'=>'Xarajat qiymati',
@@ -198,10 +280,11 @@ class ProblemMonitorings extends \yii\db\ActiveRecord
             'spent_on' => 'Sarflangan vaqt (minutda)',
             'comment' => 'Izoh',
             'winno' => 'Win kod',
-            'user_id' => 'Kiritdi',
-            'created_at' => 'Tizimga kiritilgan sana',
+            'user_id' => 'Ma\'sul foydalanuvchi',
+	        'created_at' => 'Open bo\'lgan vaqti',
+	        'finished_at' => 'Close bo\'lgan vaqti',
             'search' => 'Tizimdan izlash (Win kodi, P/O yoki model bo\'yicha)',
-            'tag' => 'Kod',
+            'tag' => 'Defekt kodlar',
         ];
     }
 
@@ -217,6 +300,10 @@ class ProblemMonitorings extends \yii\db\ActiveRecord
 	public function getUserinfo()
 	{
 		return $this->hasOne(User::className(), ['id' => 'user_id']);
+	}
+	public function getDefectName()
+	{
+		return $this->hasOne(TagAssign::className(), ['post_id' => 'id']);
 	}
 
 }

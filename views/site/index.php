@@ -6,16 +6,26 @@
 	use yii\helpers\Html;
 	use yii\widgets\ActiveForm;
 	require_once('statistics.php');
+		$money =ProblemMonitorings::FinancialLossCurrentMonth();
 ?>
 
 <!-- Content Header (Page header) -->
-		<section class="content-header" >
-			<h1>
+			<section class="content-header" >
+		<div class="row">
+			<div class="col-md-3">
+			<h3>
 				Bosh sahifa
 				<small>Statistikalar</small>
-			</h1>
-
+			</h3>
+		</div>
+			<div class="col-md-9">
+				<div class="alert alert-info">
+					<strong>Oy boshidan boshlab umumiy keltirigan zarar: <span style="color:darkred;font-weight:bold;font-size:18px"><?= number_format($money,0)?> so'm</strong></span>
+				</div>
+			</div>
+		</div>
 		</section>
+
 
 		<!-- Main content -->
 		<section class="content">
@@ -25,9 +35,9 @@
 					<!-- small box -->
 					<div class="small-box bg-aqua">
 						<div class="inner">
-							<h3><?=ProblemMonitorings::TodaysCars();?></h3>
+							<h3><?=ProblemMonitorings::YesterdayNightsCars();?> / <?=ProblemMonitorings::TodaysCars();?></h3>
 
-							<p>Bugungi ta'mirlar</p>
+							<p>Kecha tungi va bugun kunduzgi ta'mirlar</p>
 						</div>
 						<div class="icon">
 							<i class="fa fa-gears"></i>
@@ -87,7 +97,7 @@
 			<!-- Main row -->
 			<div class="row">
 				<!-- Left col -->
-				<h2 style="text-align:center">  Vaqt oralig'ida izlang!</h2>
+				<h2 style="text-align:center">  Vaqt oralig'ida ma'lumotlarni ko'rsatish!</h2>
 				<?php $form = ActiveForm::begin(); ?>
 				<?= DateRangePicker::widget([
 						                             'model'=>$model,
@@ -97,7 +107,7 @@
 							                             'timePicker'=>true,
 							                             'timePickerIncrement'=>30,
 							                             'locale'=>[
-								                             'format'=>'Y-m-d h:i:s'
+								                             'format'=>'Y-m-d'
 							                             ]
 						                             ]
 					                             ]); ?>
@@ -234,6 +244,77 @@
 					                   ]);?>
 				</div>
 
+			</div>
+			<div class="row" style="background:white">
+				<div class="col-md-6" >
+					<h3 class="text-center">Uchastkalar kesimida aniqlangan zarar diagrammada</h3>
+					<?=ChartJs::widget([
+						                   'type' => 'pie',
+						                   'options' => [
+							                   'height' => 200,
+							                   'width' => 600,
+							                   'scales' => [
+								                   'yAxes' => [
+									                   'ticks' => [
+										                   'min' => 0
+									                   ]
+								                   ],
+								                   'xAxes' => [
+									                   'ticks' => [
+										                   'min' => 0
+									                   ]
+								                   ]
+							                   ]
+						                   ],
+						                   'data' => [
+							                   'labels' => $labels,
+							                   'datasets' => [
+								                   [
+									                   'label' => "Cobalt",
+									                   'backgroundColor' => ["#922B21",'#58D68D','#99A3A4','#F1C40F','#154360','green','#7D3C98 ','#17202A'],
+									                   'borderColor' => "rgba(255,99,132,1)",
+									                   'pointBackgroundColor' => "rgba(255,99,132,1)",
+									                   'pointBorderColor' => "#fff",
+									                   'pointHoverBackgroundColor' => "#fff",
+									                   'pointHoverBorderColor' => "rgba(255,99,132,1)",
+									                   'data' => $sums
+								                   ],
+
+
+						                   ]
+							                   ]
+					                   ]);?>
+				</div>
+				<div class="col-md-6">
+					<h3 class="text-center">Uchastkalar kesimida aniqlangan zarar jadvalda</h3>
+
+					<table class="table table-striped">
+						<thead>
+						<tr>
+							<th class="text-center" style="color:forestgreen">Uchastka</th>
+							<th class="text-center" style="color:forestgreen">Aniqlangan zarar</th>
+						</tr>
+						</thead>
+						<tbody>
+
+						<?php foreach($uchastkalar as $uchastka): ?>
+							<?php $zarar = ProblemMonitorings::find()
+							                                 ->where(['>=', 'date', $statisticsDateBegin])
+							                                 ->andWhere(['<=', 'date', $statisticsDateFinish])
+							                                 ->andwhere(['sector' => $uchastka->id])
+							                                 ->sum('money_spent'); ?>
+							<tr class="text-center">
+								<td><?=$uchastka->name?></td>
+								<td style="color:red;font-weight:bold"><?=number_format($zarar, 0)?> so'm</td>
+							</tr>
+						<?php endforeach; ?>
+
+						</tbody>
+					</table>
+
+
+				</div>
+			</div>
 				<div class="col-md-12" style="background:white">
 					<h3 style="font-weight:bold;text-align:center">Nuqsonli avtomobillarni REP uchastkalarida ta'mirlashnishi to'g'risidagi ma'lumotlar</h3>
 					<table class="table table-hover">

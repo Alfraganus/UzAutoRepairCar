@@ -1,6 +1,6 @@
 <?php
-
-use yii\helpers\Html;
+	use kartik\switchinput\SwitchInput;
+	use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 use kartik\typeahead\TypeaheadBasic;
 use kartik\typeahead\Typeahead;
@@ -16,61 +16,72 @@ use yii\helpers\Url;
 	<?php $form = ActiveForm::begin(); ?>
 
     <div class="containing" style='width:95%'>
+	    <center>
+		    <?= $form->field($model, 'problem_status')->widget(SwitchInput::classname(), [
+			    'type' => SwitchInput::CHECKBOX,
+			    'value'=>'test',
+			    'pluginOptions' => [
+				    'onText' => 'Close',
+				    'offText' => 'Open',
+				    'size' => 'large',
+				    'onColor' => 'success',
+				    'offColor' => 'danger',
 
+			    ]
+		    ]); ?>
+	    </center>
    
-    <div class="col-md-4">
+    <div class="col-md-6">
     <?= $form->field($model, 'sector')->dropDownList($sector) ?>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-6">
     <?= $form->field($model, 'shift')->dropdownlist(['А'=>'А','В'=>'В','Д'=>'Д']) ?>
     </div>
-	    <div class="col-md-4">
+	    <div class="col-md-6">
 		    <?= $form->field($model, 'model')->textInput(['readonly'=>true]) ?>
 	    </div>
 
 
 
-    <div class="col-md-4">
+    <div class="col-md-6">
     <?= $form->field($model, 'date')->input('date',['format'=>'dd-mm-YYYY','value'=>date("Y-m-d"),'readonly'=>true]) ?>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-6">
     <?= $form->field($model, 'department')->dropDownList($departments) ?>
     </div>
-    <div class="col-md-4">
-    <?= $form->field($model, 'spent_on')->textInput(['maxlength' => true]) ?>
-    </div>
 
-    <div class="col-md-4" style='margin-botton:30px'>
-    <label for="male">Muammo(lar)</label>
-    <?php
-   if (!$model->isNewRecord) {
-        $tags = \yii\helpers\ArrayHelper::map(\app\models\TagAssign::find()->where(['post_id'=>$model->id])->all(),'id','tag.id');
-        $tags_str = implode(',',$tags);
-    }else{
-        $tags_str = '';
-    }
-    echo \dosamigos\selectize\SelectizeTextInput::widget([
-        'name' => 'ProblemMonitorings[tag]',
-        'loadUrl' => ['tag/list'],
-        'value' =>$tags_str,
-        'clientOptions' => [
-            'plugins' => ['remove_button'],
-            'valueField' => 'keyword',
-            'labelField' => 'keyword',
-            'searchField' => ['keyword'],
-            'create' => false,
-            'delimiter' => ',',
-            'persist' => false,
-            'createOnBlur' => true,
-            'preload'=> false,
-        ]
-    ]);
-    ?>
+	    <label for="">defelt kodlar</label>
+    <div class="col-md-6" style='margin-botton:30px'>
+	    <?php
+		    if(!$model->isNewRecord){
+			    $tags = \yii\helpers\ArrayHelper::map(\app\models\TagAssign::find()->where(['post_id' => $model->id])->all(), 'id', 'tag.id');
+			    $tags_str = implode(',', $tags);
+		    }else{
+			    $tags_str = '';
+		    }
+		    echo \dosamigos\selectize\SelectizeTextInput::widget([
+			                                                         'name' => 'ProblemMonitorings[tag]',
+			                                                         'loadUrl' => ['tag/list'],
+			                                                         'value' => $tags_str,
+			                                                         'clientOptions' => [
+				                                                         'plugins' => ['remove_button'],
+				                                                         'valueField' => 'keyword',
+				                                                         'labelField' => 'keyword',
+				                                                         'searchField' => ['keyword'],
+				                                                         'create' => false,
+				                                                         'delimiter' => ',',
+				                                                         'persist' => false,
+				                                                         'createOnBlur' => true,
+				                                                         'preload' => false,
+			                                                         ]
+		                                                         ]);
+	    ?>
     </div>
-	    <div class="col-md-4">
+	    <div style="clear:both"></div>
+	    <div class="col-md-6">
 		    <?= $form->field($model, 'PO')->textInput(['readonly'=>true]) ?>
 	    </div>
-	    <div class="col-md-4">
+	    <div class="col-md-6">
 		    <?= $form->field($model, 'winno')->textInput(['readonly'=>true]) ?>
 	    </div>
 

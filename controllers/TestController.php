@@ -2,10 +2,14 @@
 
 namespace app\controllers;
 
+use app\models\ProblemMonitorings;
+use app\models\Sectors;
+use app\models\TagAssign;
 use Yii;
 use app\models\Test;
 use yii\data\ActiveDataProvider;
 use yii\web\Controller;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
@@ -29,6 +33,27 @@ class TestController extends Controller
         ];
     }
 
+	public function actionRepairSectorMonitorings()
+	{
+		$cars_in_monitorings = ProblemMonitorings::find()
+		                          ->select(['id','PO','COUNT(*) as cnt'])
+		                          ->groupBy(['PO'])
+		                          ->orderBy('cnt desc')
+		                          ->limit(15)
+		                          ->all();
+		$sectors = Sectors::find()->groupBy(['name'])->all();
+
+		return $this->render('repair_sector_monitorings',compact(
+			'sectors',
+			'cars_in_monitorings'
+		));
+	}
+
+	public function actionDetailCar($po)
+	{
+		$car = ProblemMonitorings::find()->where(['PO'=>$po])->all();
+		return $this->render('detail',compact('car'));
+	}
 
     public function actionGetoperations()
     {

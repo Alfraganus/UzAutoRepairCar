@@ -23,13 +23,26 @@ $this->params['breadcrumbs'][] = $this->title;
             <button class='btn btn-primary'>So'rovni yuborish</button>
         </div>
         </div>
-<div style="width:95%">
 <?php ActiveForm::end(); ?>
+<div style="width:95%">
 
 <?php Pjax::begin(); ?>
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
+        'rowOptions' => function ($model) {
+           $url = "problem-monitorings/update?id=".$model->id;
+            if ($model > 0) {
+                return [
+                    'class' => ($model->problem_status == 0)? 'danger':'black',
+                    'style' => 'cursor:pointer',
+                    'title'=>$model->PO,
+                    'onclick' => "window.location.href='{$url}'",
+                ];
+            }
+	       
+        },
         'filterModel' => $searchModel,
+
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],
 
@@ -66,6 +79,15 @@ $this->params['breadcrumbs'][] = $this->title;
     ]); ?>
 <?php Pjax::end(); ?>
 
+<style>
+.danger {
+    color: red !important;
+}
+/*.black {
+    color : white;
+    background: black;
+}*/
 
+</style>
 
 </div>

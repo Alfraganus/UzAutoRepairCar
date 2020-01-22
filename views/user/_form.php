@@ -16,7 +16,7 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'username')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'role')->dropDownList(['Admin'=>'Admin','User'=>'User']) ?>
+    <?= $form->field($model, 'role')->dropDownList(['quality_writer'=>'Kachestva-kirituvchi','quality_manager'=>'Kachestva-boshqaruvchi','ishlab_chiqarish_writer'=>'Ishlab  chiqarish kirituvchi','ishlab_chiqarish_manager'=>'Ishlab  chiqarish boshqaruvchi']) ?>
 
     <div class="form-group">
         <?= Html::submitButton('Saqlash', ['class' => 'btn btn-success']) ?>

@@ -6,6 +6,7 @@ use Yii;
 use app\models\ServicePrice;
 use app\models\ServicePriceSearch;
 use yii\web\Controller;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
@@ -64,6 +65,11 @@ class ServicePriceController extends Controller
      */
     public function actionCreate()
     {
+
+	    if(Yii::$app->user->identity->id!==51){
+		    throw new ForbiddenHttpException('Sizda ushbu amal uchun ruxsat mavjud emas!');
+	    }
+
         $model = new ServicePrice();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
@@ -86,6 +92,9 @@ class ServicePriceController extends Controller
      */
     public function actionUpdate($id)
     {
+	    if(Yii::$app->user->identity->id!==51){
+            throw new ForbiddenHttpException('Sizda ushbu amal uchun ruxsat mavjud emas!');
+        }
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
@@ -108,6 +117,10 @@ class ServicePriceController extends Controller
      */
     public function actionDelete($id)
     {
+          if(Yii::$app->user->identity->id!==51){
+            throw new ForbiddenHttpException('Sizda ushbu amal uchun ruxsat mavjud emas!');
+        }
+	   
         $model = $this->findModel($id);
         $model->is_active=0;
         $model->save(false);

@@ -5,15 +5,32 @@ use yii\widgets\ActiveForm;
 use kartik\typeahead\TypeaheadBasic;
 use kartik\typeahead\Typeahead;
 use yii\helpers\Url;
+use kartik\switchinput\SwitchInput;
 /* @var $this yii\web\View */
 /* @var $model app\models\ProblemMonitorings */
 /* @var $form yii\widgets\ActiveForm */
 ?>
 
 <div class="container" style="width:95%">
+
 <?= $model->PO?>
 	<p><?=substr($model->PO,0,6)?></p>
     <?php $form = ActiveForm::begin(); ?>
+<center>
+	<?= $form->field($model, 'problem_status')->widget(SwitchInput::classname(), [
+		'type' => SwitchInput::CHECKBOX,
+		'value'=>'test',
+		'pluginOptions' => [
+			'onText' => 'Close',
+			'offText' => 'Open',
+			'size' => 'large',
+			'onColor' => 'success',
+			'offColor' => 'danger',
+
+		]
+	]); ?>
+</center>
+
  <?php
 
 	 if ($model->isNewRecord):
@@ -67,17 +84,15 @@ $assoc = array();
     </div>
     <div class="col-md-6">
 	    <?= $form->field($model, 'res_person_tabel')->textInput() ?>
-	    <?php $form->field($model, 'date')->input('date',['format'=>'dd-mm-YYYY','value'=>date("Y-m-d"),'readonly'=>true]) ?>
     </div>
-    <div class="col-md-6">
-    <?= $form->field($model, 'spent_on')->textInput(['maxlength' => true]) ?>
-    </div>
+
 
 	    <div class="col-md-6">
 		    <?= $form->field($model, 'repair_case')->dropDownList([1=>'kichik',2=>"o'rta",3=>'katta']) ?>
 	    </div>
-    <div class="col-md-6">
-    <label for="male">Muammo(lar)</label>
+    <div class="col-md-12">
+<!--    <label for="male">Muammo(lar)</label>-->
+
     <?php
    if (!$model->isNewRecord) {
         $tags = \yii\helpers\ArrayHelper::map(\app\models\TagAssign::find()->where(['post_id'=>$model->id])->all(),'id','tag.id');
@@ -85,21 +100,20 @@ $assoc = array();
     }else{
         $tags_str = '';
     }
-    echo \dosamigos\selectize\SelectizeTextInput::widget([
-        'name' => 'ProblemMonitorings[tag]',
-        'loadUrl' => ['tag/list'],
-        'value' =>$tags_str,
-        'clientOptions' => [
-            'plugins' => ['remove_button'],
-            'valueField' => 'keyword',
-            'labelField' => 'keyword',
-            'searchField' => ['keyword'],
-            'create' => false,
-            'delimiter' => ',',
-            'persist' => false,
-            'createOnBlur' => true,
-            'preload'=> false,
-        ]
+    echo $form->field($model, 'tag')->widget(\dosamigos\selectize\SelectizeTextInput::className(), [
+	    'loadUrl' => ['tag/list'],
+	    'value' =>$tags_str,
+	    'clientOptions' => [
+		    'plugins' => ['remove_button'],
+		    'valueField' => 'keyword',
+		    'labelField' => 'keyword',
+		    'searchField' => ['keyword'],
+		    'create' => false,
+		    'delimiter' => ',',
+		    'persist' => false,
+		    'createOnBlur' => true,
+		    'preload'=> false,
+	    ]
     ]);
     ?>
     </div>
